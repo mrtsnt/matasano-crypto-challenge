@@ -4,6 +4,7 @@
 
 open System
 open System.IO
+open System.Text.RegularExpressions
 
 let challenge1 () =
     "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
@@ -40,26 +41,30 @@ let calcDistance (str : string) =
         let expected = getFrequency ch
         (actual - expected) |> abs) (str |> Seq.groupBy id)
 
-let getXors str =
-    let inBytes = str |> Convert.hexToBytes
-    List.map (fun ch -> inBytes |> Array.map (fun el -> el ^^^ ch)) [32uy..126uy]
-    |> List.filter (fun arr -> 
+let getXors bts =
+    List.map (fun ch -> bts |> Array.map (fun el -> el ^^^ ch), ch) [32uy..126uy]
+    |> List.filter (fun (arr, _) -> 
         let isPrintable = Array.forall (fun ch -> (ch <= 127uy && ch >= 32uy) || ch = 10uy) arr 
         let hasSpace = Array.exists(fun ch -> ch = 32uy) arr
-        isPrintable && hasSpace) |> List.map Convert.bytesToAscii
+        isPrintable && hasSpace) 
+    |> List.map (fun (arr, ch) -> Convert.bytesToAscii arr, ch)
+
+let decryptSingleCharXor bts = getXors bts |> List.minBy (fst >> calcDistance)
 
 // Cooking MC's like a pound of bacon ?
 let challenge3 () = 
-    List.minBy snd ("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736" 
-    |> getXors
-    |> List.map (fun xor -> (xor, calcDistance xor)))
+    List.minBy snd (
+        "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736" 
+        |> Convert.hexToBytes
+        |> getXors
+        |> List.map (fun xor -> (xor, calcDistance (fst xor))))
 
 // Now that the party is jumping ?
 let challenge4 () =
     File.ReadAllLines("data/set1challenge4") 
     |> Array.map (fun s -> s.Trim())
-    |> Array.collect (getXors >> Array.ofList)
-    |> Array.map (fun xor -> (xor, calcDistance xor))
+    |> Array.collect (Convert.hexToBytes >> getXors >> Array.ofList)
+    |> Array.map (fun xor -> (xor, calcDistance (fst xor)))
     |> Array.sortBy snd
 
 let encryptRepeatingXor (str : string) (key : string) =
@@ -83,14 +88,28 @@ let getHammingDistance (b1 : byte []) (b2 : byte []) =
 
     [0..b1.Length - 1] |> List.sumBy (fun idx -> getByteDiff b1.[idx] b2.[idx])
 
-let txt = File.ReadAllText("data/set1challenge6").Replace("\n", "")
+let txt = File.ReadAllText("data/set1challenge6")
+let bts = Regex.Replace(txt, @"\s", "") |> Convert.base64ToBytes
 let getKeySize txt avgSize = 
     let bytes = Convert.base64ToBytes txt
     [2..40]
     |> List.map (fun ks ->
         let blocks = Array.map (fun bl -> bytes.[bl * ks..bl * (ks + 1) - 1]) [|0..avgSize|]
-        let avgDiff = Array.averageBy (fun bl -> (getHammingDistance blocks.[bl] blocks.[bl + 1] |> double) / (double ks)) [|0..avgSize - 1|]
+        let avgDiff = Array.averageBy (fun bl -> 
+            (getHammingDistance blocks.[bl] blocks.[bl + 1] |> double) / (double ks)) [|0..avgSize - 1|]
         ks, avgDiff)
     |> List.sortBy snd
 
 // keysize is prob 29
+let transposeBlocks (bts : byte []) keySize =
+    let getBlock n = 
+        let sq = seq {
+            let mutable pos = n
+            while pos < bts.Length do
+                yield bts.[pos]
+                pos <- pos + keySize
+        }
+        sq |> Array.ofSeq
+    List.map getBlock [0..keySize - 1]
+
+transposeBlocks bts 29 |> List.map (decryptSingleCharXor >> snd) |> Array.ofList |> Convert.bytesToAscii
