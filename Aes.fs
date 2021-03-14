@@ -14,11 +14,6 @@ let decryptAes128ECB (encrypted : byte []) (key : byte []) =
     use sr = new StreamReader(cs)
     sr.ReadToEnd()
 
-let splitBlocks (bts : byte[]) =
-    let mutable ptr = 0
-    let mutable blocks : byte [] list = []
-    while ptr < bts.Length do
-        let offset = if ptr + 15 >= bts.Length then bts.Length else ptr + 15
-        blocks <- (bts.[ptr..offset])::blocks
-        ptr <- ptr + 16
-    blocks
+let splitBlocks blockSize (bts : byte[]) =
+    let blockCount = bts.Length / blockSize
+    [for i in 0..blockCount - 1 -> bts.[i * blockSize .. (i + 1) * blockSize - 1]]
