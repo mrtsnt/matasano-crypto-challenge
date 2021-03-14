@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Aes.fs" />
+    <Compile Include="Convert.fs" />
+    <Compile Include="Xor.fs" />
+    <Compile Include="Set1.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+</Project>

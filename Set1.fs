@@ -1,16 +1,18 @@
 #if INTERACTIVE
 #load "Convert.fs"
+#load "Aes.fs"
+#load "Xor.fs"
 #endif
+
+module Set1
 
 open System
 open System.IO
-open System.Text.RegularExpressions
 
 let challenge1 () =
     "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
     |> Convert.hexToBytes
     |> Convert.base64Encode
-    |> printfn "%s"
 
 let challenge2 () = 
     let inBytes = "1c0111001f010100061a024b53535009181c" |> Convert.hexToBytes
@@ -19,7 +21,6 @@ let challenge2 () =
     |> List.map (fun idx -> inBytes.[idx] ^^^ xorBytes.[idx])
     |> Array.ofList
     |> Convert.bytesToHex
-    |> printfn "%s"
 
 let getFrequency ch = 
     let charFrequency =
@@ -115,3 +116,9 @@ let challenge6 () =
         List.map getBlock [0..keySize - 1]
 
     transposeBlocks bts keySize |> List.map (decryptSingleCharXor >> snd) |> Array.ofList |> Convert.bytesToAscii
+
+let challenge7 () =
+    let key = "YELLOW SUBMARINE" |> Convert.asciiToBytes
+    let cipherBytes = File.ReadAllText("data/set1challenge7").Replace("\n", "") |> Convert.base64ToBytes
+    Aes.decryptAes128ECB cipherBytes key
+
