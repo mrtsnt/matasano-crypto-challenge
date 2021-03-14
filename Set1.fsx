@@ -51,7 +51,7 @@ let getXors bts =
 
 let decryptSingleCharXor bts = getXors bts |> List.minBy (fst >> calcDistance)
 
-// Cooking MC's like a pound of bacon ?
+// Cooking MC's like a pound of bacon
 let challenge3 () = 
     List.minBy snd (
         "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736" 
@@ -59,7 +59,7 @@ let challenge3 () =
         |> getXors
         |> List.map (fun xor -> (xor, calcDistance (fst xor))))
 
-// Now that the party is jumping ?
+// Now that the party is jumping
 let challenge4 () =
     File.ReadAllLines("data/set1challenge4") 
     |> Array.map (fun s -> s.Trim())
@@ -68,8 +68,7 @@ let challenge4 () =
     |> Array.sortBy snd
 
 let encryptRepeatingXor (str : string) (key : string) =
-    str 
-    |> Seq.mapi (fun idx ch -> (byte ch) ^^^ (byte key.[idx % key.Length])) 
+    Seq.mapi (fun idx ch -> (byte ch) ^^^ (byte key.[idx % key.Length])) str
     |> Array.ofSeq
 
 let challenge5 () =
@@ -77,39 +76,42 @@ let challenge5 () =
 I go crazy when I hear a cymbal""" "ICE" 
     |> Convert.bytesToHex
 
-let getHammingDistance (b1 : byte []) (b2 : byte []) =
-    let getByteDiff (b1 : byte) (b2 : byte) =
-        let mutable cnt = 0
-        let mutable xor = b1 ^^^ b2
-        for _ in 0..7 do
-            if 1uy &&& xor = 1uy then cnt <- cnt + 1
-            xor <- xor >>> 1
-        cnt
+let challenge6 () = 
 
-    [0..b1.Length - 1] |> List.sumBy (fun idx -> getByteDiff b1.[idx] b2.[idx])
+    let bts = File.ReadAllText("data/set1challenge6").Replace("\n", "") |> Convert.base64ToBytes
 
-let txt = File.ReadAllText("data/set1challenge6")
-let bts = Regex.Replace(txt, @"\s", "") |> Convert.base64ToBytes
-let getKeySize txt avgSize = 
-    let bytes = Convert.base64ToBytes txt
-    [2..40]
-    |> List.map (fun ks ->
-        let blocks = Array.map (fun bl -> bytes.[bl * ks..bl * (ks + 1) - 1]) [|0..avgSize|]
-        let avgDiff = Array.averageBy (fun bl -> 
-            (getHammingDistance blocks.[bl] blocks.[bl + 1] |> double) / (double ks)) [|0..avgSize - 1|]
-        ks, avgDiff)
-    |> List.sortBy snd
+    let getHammingDistance (b1 : byte []) (b2 : byte []) =
+        let getByteDiff (b1 : byte) (b2 : byte) =
+            let mutable cnt = 0
+            let mutable xor = b1 ^^^ b2
+            for _ in 0..7 do
+                if 1uy &&& xor = 1uy then cnt <- cnt + 1
+                xor <- xor >>> 1
+            cnt
+        [0..b1.Length - 1] |> List.sumBy (fun idx -> getByteDiff b1.[idx] b2.[idx])
 
-// keysize is prob 29
-let transposeBlocks (bts : byte []) keySize =
-    let getBlock n = 
-        let sq = seq {
-            let mutable pos = n
-            while pos < bts.Length do
-                yield bts.[pos]
-                pos <- pos + keySize
-        }
-        sq |> Array.ofSeq
-    List.map getBlock [0..keySize - 1]
+    let getKeySize trials = 
+        [2..40]
+        |> List.map (fun ks ->
+            let firstBlock = bts.[0..ks-1]
+            let avgDistance = [1..trials] |> List.averageBy (fun t ->
+                let block = bts.[ks * t .. ks * (t + 1) - 1]
+                (double <| getHammingDistance block firstBlock) / (double ks))
+            ks, avgDistance)
+        |> List.minBy snd
+        |> fst
 
-transposeBlocks bts 29 |> List.map (decryptSingleCharXor >> snd) |> Array.ofList |> Convert.bytesToAscii
+    let keySize = getKeySize 15
+
+    let transposeBlocks (bts : byte []) keySize =
+        let getBlock n = 
+            let sq = seq {
+                let mutable pos = n
+                while pos < bts.Length do
+                    yield bts.[pos]
+                    pos <- pos + keySize
+            }
+            sq |> Array.ofSeq
+        List.map getBlock [0..keySize - 1]
+
+    transposeBlocks bts keySize |> List.map (decryptSingleCharXor >> snd) |> Array.ofList |> Convert.bytesToAscii
