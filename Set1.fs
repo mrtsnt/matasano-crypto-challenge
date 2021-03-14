@@ -59,7 +59,7 @@ let challenge3 () =
 
 // Now that the party is jumping ?
 let challenge4 () =
-    File.ReadAllLines("data/set1challange4") 
+    File.ReadAllLines("data/set1challenge4") 
     |> Array.map (fun s -> s.Trim())
     |> Array.collect (getXors >> Array.ofList)
     |> Array.map (fun xor -> (xor, calcDistance xor))
@@ -87,3 +87,8 @@ let getHammingDistance s1 s2 =
     let b1 = Convert.asciiToBytes s1
     let b2 = Convert.asciiToBytes s2
     [0..b1.Length - 1] |> List.sumBy (fun idx -> getByteDiff b1.[idx] b2.[idx])
+
+let txt = File.ReadAllText("data/set1challenge6").Replace("\n", "")
+let getKeySize txt = 
+    let bytes = Convert.base
+
