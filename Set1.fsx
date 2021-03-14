@@ -2,8 +2,6 @@
 #load "Convert.fs"
 #endif
 
-module Set1
-
 open System
 open System.IO
 
@@ -96,4 +94,3 @@ let getKeySize txt avgSize =
     |> List.sortBy snd
 
 // keysize is prob 29
-
