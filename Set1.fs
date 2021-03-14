@@ -21,7 +21,7 @@ let challenge2 () =
 let calcDistance (str : string) =
     Seq.averageBy (fun (ch, ocs) -> 
         let actual = (Seq.length ocs |> double) / double str.Length
-        let expected = Xor.getFrequency ch
+        let expected = Xor.getEnglishFrequency ch
         (actual - expected) |> abs) (str |> Seq.groupBy id)
 
 let getXors bts =

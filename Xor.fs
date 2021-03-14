@@ -2,7 +2,7 @@ module Xor
 
 open System
 
-let getFrequency ch = 
+let getEnglishFrequency ch = 
     let charFrequency =
         [('A', 0.0834); ('B', 0.0154); ('C', 0.0273); ('D', 0.0414); ('E', 0.1260);
          ('F', 0.0203); ('G', 0.0192); ('H', 0.0611); ('I', 0.0671); ('J', 0.0023);
@@ -12,9 +12,9 @@ let getFrequency ch =
          ('Z', 0.0006); (' ', 0.2000)]
         |> Map.ofList
 
-    let upperChar = Char.ToUpper ch
-    if Map.containsKey upperChar charFrequency then charFrequency.[upperChar]
-    else float 0
+    match Map.tryFind (Char.ToUpper ch) charFrequency with
+    | Some f -> f
+    | None -> 0.0
 
 let xor (bts1 : byte []) (bts2 : byte []) = 
     Array.map2 (^^^) bts1 bts2
