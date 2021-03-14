@@ -24,12 +24,12 @@ let challenge2 () =
 
 let getFrequency ch = 
     let charFrequency =
-        [('A', 8.34); ('B', 1.54); ('C', 2.73); ('D', 4.14); ('E', 12.60);
-         ('F', 2.03); ('G', 1.92); ('H', 6.11); ('I', 6.71); ('J', 0.23);
-         ('K', 0.87); ('L', 4.24); ('M', 2.53); ('N', 6.80); ('O', 7.70);
-         ('P', 1.66); ('Q', 0.09); ('R', 5.68); ('S', 6.11); ('T', 9.37);
-         ('U', 2.85); ('V', 1.06); ('W', 2.34); ('X', 0.20); ('Y', 2.04);
-         ('Z', 0.06)]
+        [('A', 0.0834); ('B', 0.0154); ('C', 0.0273); ('D', 0.0414); ('E', 0.1260);
+         ('F', 0.0203); ('G', 0.0192); ('H', 0.0611); ('I', 0.0671); ('J', 0.0023);
+         ('K', 0.0087); ('L', 0.0424); ('M', 0.0253); ('N', 0.0680); ('O', 0.0770);
+         ('P', 0.0166); ('Q', 0.0009); ('R', 0.0568); ('S', 0.0611); ('T', 0.0937);
+         ('U', 0.0285); ('V', 0.0106); ('W', 0.0234); ('X', 0.0020); ('Y', 0.0204);
+         ('Z', 0.0006); (' ', 0.2000)]
         |> Map.ofList
 
     let upperChar = Char.ToUpper ch
@@ -39,7 +39,7 @@ let getFrequency ch =
 let calcDistance (str : string) =
     Seq.averageBy (fun (ch, ocs) -> 
         let actual = (Seq.length ocs |> double) / double str.Length
-        let expected = getFrequency ch // calc frequency for chars only !!!!!
+        let expected = getFrequency ch
         (actual - expected) |> abs) (str |> Seq.groupBy id)
 
 let getXors str =
