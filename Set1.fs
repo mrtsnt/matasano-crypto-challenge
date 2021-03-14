@@ -1,8 +1,8 @@
 #if INTERACTIVE
-#load "Decrypt.fs"
-#load "Convert.fs"
-#load "Aes.fs"
-#load "Xor.fs"
+    #load "Decrypt.fs"
+    #load "Convert.fs"
+    #load "Aes.fs"
+    #load "Xor.fs"
 #endif
 
 module Set1
@@ -19,19 +19,16 @@ let challenge2 () =
     let xorBytes = "686974207468652062756c6c277320657965" |> Convert.hexToBytes
     Xor.xor inBytes xorBytes |> Convert.bytesToHex
 
-// Cooking MC's like a pound of bacon
 let challenge3 () = 
     let bts = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736" |> Convert.hexToBytes
     let possibilities = Xor.singleCharEncryptions bts |> List.map fst
     List.minBy Decrypt.calculateEnglishness possibilities
 
-// Now that the party is jumping
 let challenge4 () =
-    let data = File.ReadAllLines("data/set1challenge4") 
-    data 
+    File.ReadAllLines("data/set1challenge4") 
     |> Array.collect (Convert.hexToBytes >> Xor.singleCharEncryptions >> Array.ofList)
-    |> Array.map (fun xor -> (xor, Decrypt.calculateEnglishness (fst xor)))
-    |> Array.sortBy snd
+    |> Array.map fst
+    |> Array.minBy Decrypt.calculateEnglishness
 
 let challenge5 () =
     Xor.encryptRepeating """Burning 'em, if you ain't quick and nimble
@@ -58,12 +55,3 @@ let challenge8 () =
         let blockGroups = (Convert.hexToBytes >> Aes.splitBlocks 16) arr
         let distinctBlocks = blockGroups |> List.distinct
         List.length blockGroups - List.length distinctBlocks) data
-
-challenge1 ()
-challenge2 ()
-challenge3 ()
-challenge4 ()
-challenge5 ()
-challenge6 ()
-challenge7 ()
-challenge8 ()

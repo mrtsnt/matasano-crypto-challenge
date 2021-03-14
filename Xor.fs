@@ -1,6 +1,7 @@
 module Xor
 
-let xor (bts1 : byte []) (bts2 : byte []) = Array.map2 (^^^) bts1 bts2
+let xor (bts1 : byte []) (bts2 : byte []) = 
+    Array.map2 (^^^) bts1 bts2
 
 let hammingDistance (b1 : byte []) (b2 : byte []) =
     let getByteDiff (b1 : byte) (b2 : byte) =

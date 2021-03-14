@@ -2,7 +2,7 @@ module Decrypt
 
 open System
 
-let getEnglishFrequency ch = 
+let private getEnglishFrequency ch = 
     let charFrequency =
         [('A', 0.0834); ('B', 0.0154); ('C', 0.0273); ('D', 0.0414); ('E', 0.1260);
          ('F', 0.0203); ('G', 0.0192); ('H', 0.0611); ('I', 0.0671); ('J', 0.0023);
