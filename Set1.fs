@@ -122,3 +122,9 @@ let challenge7 () =
     let cipherBytes = File.ReadAllText("data/set1challenge7").Replace("\n", "") |> Convert.base64ToBytes
     Aes.decryptAes128ECB cipherBytes key
 
+let challenge8 () = 
+    let data = File.ReadAllLines("data/set1challenge8")
+    Array.maxBy (fun arr ->
+        let blockGroups = (Convert.hexToBytes >> Aes.splitBlocks) arr
+        let distinctBlocks = blockGroups |> List.distinct
+        List.length blockGroups - List.length distinctBlocks) data
