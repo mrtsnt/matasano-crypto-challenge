@@ -52,10 +52,9 @@ let getXors str =
 
 // Cooking MC's like a pound of bacon ?
 let challenge3 () = 
-    "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736" 
+    List.minBy snd ("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736" 
     |> getXors
-    |> List.map (fun xor -> (xor, calcDistance xor))
-    |> List.sortBy snd
+    |> List.map (fun xor -> (xor, calcDistance xor)))
 
 // Now that the party is jumping ?
 let challenge4 () =
@@ -75,7 +74,7 @@ let challenge5 () =
 I go crazy when I hear a cymbal""" "ICE" 
     |> Convert.bytesToHex
 
-let getHammingDistance s1 s2 =
+let getHammingDistance (b1 : byte []) (b2 : byte []) =
     let getByteDiff (b1 : byte) (b2 : byte) =
         let mutable cnt = 0
         let mutable xor = b1 ^^^ b2
@@ -84,11 +83,17 @@ let getHammingDistance s1 s2 =
             xor <- xor >>> 1
         cnt
 
-    let b1 = Convert.asciiToBytes s1
-    let b2 = Convert.asciiToBytes s2
     [0..b1.Length - 1] |> List.sumBy (fun idx -> getByteDiff b1.[idx] b2.[idx])
 
 let txt = File.ReadAllText("data/set1challenge6").Replace("\n", "")
-let getKeySize txt = 
-    let bytes = Convert.base
+let getKeySize txt avgSize = 
+    let bytes = Convert.base64ToBytes txt
+    [2..40]
+    |> List.map (fun ks ->
+        let blocks = Array.map (fun bl -> bytes.[bl * ks..bl * (ks + 1) - 1]) [|0..avgSize|]
+        let avgDiff = Array.averageBy (fun bl -> (getHammingDistance blocks.[bl] blocks.[bl + 1] |> double) / (double ks)) [|0..avgSize - 1|]
+        ks, avgDiff)
+    |> List.sortBy snd
+
+// keysize is prob 29
 
