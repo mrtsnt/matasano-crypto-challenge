@@ -7,7 +7,6 @@ module Set1
 open System
 open System.IO
 
-
 let challenge1 () =
     "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
     |> Convert.hexToBytes
@@ -46,8 +45,10 @@ let calcDistance (str : string) =
 let getXors str =
     let inBytes = str |> Convert.hexToBytes
     List.map (fun ch -> inBytes |> Array.map (fun el -> el ^^^ ch)) [32uy..126uy]
-    |> List.filter (fun arr -> Array.forall (fun ch -> (ch <= 127uy && ch >= 32uy) || ch = 10uy) arr)
-    |> List.map Convert.bytesToAscii
+    |> List.filter (fun arr -> 
+        let isPrintable = Array.forall (fun ch -> (ch <= 127uy && ch >= 32uy) || ch = 10uy) arr 
+        let hasSpace = Array.exists(fun ch -> ch = 32uy) arr
+        isPrintable && hasSpace) |> List.map Convert.bytesToAscii
 
 // Cooking MC's like a pound of bacon ?
 let challenge3 () = 
@@ -55,7 +56,6 @@ let challenge3 () =
     |> getXors
     |> List.map (fun xor -> (xor, calcDistance xor))
     |> List.sortBy snd
-    |> List.take 15
 
 // Now that the party is jumping ?
 let challenge4 () =
@@ -64,7 +64,6 @@ let challenge4 () =
     |> Array.collect (getXors >> Array.ofList)
     |> Array.map (fun xor -> (xor, calcDistance xor))
     |> Array.sortBy snd
-    |> Array.take 15
 
 let encryptRepeatingXor (str : string) (key : string) =
     str 
