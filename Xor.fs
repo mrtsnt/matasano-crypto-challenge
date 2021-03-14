@@ -37,3 +37,15 @@ let transposeBlocks (bts : byte []) keySize =
 let encryptRepeating (str : string) (key : string) =
     Seq.mapi (fun idx ch -> (byte ch) ^^^ (byte key.[idx % key.Length])) str
     |> Array.ofSeq
+
+let singleCharEncryptions bts =
+    List.map (fun ch -> bts |> Array.map (fun el -> el ^^^ ch), ch) [32uy..126uy]
+    |> List.filter (fun (arr, _) -> 
+        let isPrintable = Array.forall (fun ch -> (ch <= 127uy && ch >= 32uy) || ch = 10uy) arr 
+        let hasSpace = Array.exists(fun ch -> ch = 32uy) arr
+        isPrintable && hasSpace) 
+    |> List.map (fun (arr, ch) -> Convert.bytesToAscii arr, ch)
+
+let decryptSingleChar bts = 
+    singleCharEncryptions bts 
+    |> List.minBy (fst >> Decrypt.calculateEnglishness)
