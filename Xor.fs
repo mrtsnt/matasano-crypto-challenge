@@ -1,20 +1,39 @@
 module Xor
 
-open System
+let xor (bts1 : byte []) (bts2 : byte []) = Array.map2 (^^^) bts1 bts2
 
-let getEnglishFrequency ch = 
-    let charFrequency =
-        [('A', 0.0834); ('B', 0.0154); ('C', 0.0273); ('D', 0.0414); ('E', 0.1260);
-         ('F', 0.0203); ('G', 0.0192); ('H', 0.0611); ('I', 0.0671); ('J', 0.0023);
-         ('K', 0.0087); ('L', 0.0424); ('M', 0.0253); ('N', 0.0680); ('O', 0.0770);
-         ('P', 0.0166); ('Q', 0.0009); ('R', 0.0568); ('S', 0.0611); ('T', 0.0937);
-         ('U', 0.0285); ('V', 0.0106); ('W', 0.0234); ('X', 0.0020); ('Y', 0.0204);
-         ('Z', 0.0006); (' ', 0.2000)]
-        |> Map.ofList
+let hammingDistance (b1 : byte []) (b2 : byte []) =
+    let getByteDiff (b1 : byte) (b2 : byte) =
+        let mutable cnt = 0
+        let mutable xor = b1 ^^^ b2
+        for _ in 0..7 do
+            if 1uy &&& xor = 1uy then cnt <- cnt + 1
+            xor <- xor >>> 1
+        cnt
+    [0..b1.Length - 1] |> List.sumBy (fun idx -> getByteDiff b1.[idx] b2.[idx])
 
-    match Map.tryFind (Char.ToUpper ch) charFrequency with
-    | Some f -> f
-    | None -> 0.0
+let keySize (bts : byte []) trials = 
+    [2..40]
+    |> List.map (fun ks ->
+        let firstBlock = bts.[0..ks-1]
+        let avgDistance = [1..trials] |> List.averageBy (fun t ->
+            let block = bts.[ks * t .. ks * (t + 1) - 1]
+            (double <| hammingDistance block firstBlock) / (double ks))
+        ks, avgDistance)
+    |> List.minBy snd
+    |> fst
 
-let xor (bts1 : byte []) (bts2 : byte []) = 
-    Array.map2 (^^^) bts1 bts2
+let transposeBlocks (bts : byte []) keySize =
+    let getBlock n = 
+        let sq = seq {
+            let mutable pos = n
+            while pos < bts.Length do
+                yield bts.[pos]
+                pos <- pos + keySize
+        }
+        sq |> Array.ofSeq
+    List.map getBlock [0..keySize - 1]
+
+let encryptRepeating (str : string) (key : string) =
+    Seq.mapi (fun idx ch -> (byte ch) ^^^ (byte key.[idx % key.Length])) str
+    |> Array.ofSeq

@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Decrypt.fs" />
     <Compile Include="Aes.fs" />
     <Compile Include="Convert.fs" />
     <Compile Include="Xor.fs" />
