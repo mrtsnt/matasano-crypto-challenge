@@ -46,7 +46,7 @@ let calcDistance (str : string) =
 let getXors str =
     let inBytes = str |> Convert.hexToBytes
     List.map (fun ch -> inBytes |> Array.map (fun el -> el ^^^ ch)) [32uy..126uy]
-    |> List.filter (fun arr -> Array.forall (fun ch -> ch <= 127uy) arr)
+    |> List.filter (fun arr -> Array.forall (fun ch -> (ch <= 127uy && ch >= 32uy) || ch = 10uy) arr)
     |> List.map Convert.bytesToAscii
 
 // Cooking MC's like a pound of bacon ?
